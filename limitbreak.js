@@ -79,7 +79,7 @@ const configStructure = [
     id: 'barWidth',
     name: 'Width of the bar',
     type: 'text',
-    default: 260,
+    default: 300,
   },
   {
     id: 'numberFormat',
