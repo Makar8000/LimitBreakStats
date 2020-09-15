@@ -8,6 +8,7 @@ html {
 
 .hidden {
   visibility: hidden !important;
+  height: 0px !important;
 }
 
 .rounded {
@@ -65,6 +66,8 @@ input {
 .select-container {
   position: relative;
   width: 100%;
+  margin-top: -10px;
+  margin-bottom: 10px;
 }
 
 .select-active {
@@ -76,7 +79,7 @@ input {
 
 .select-active::after {
   position: absolute;
-  top: 6px;
+  top: 22px;
   right: 0;
   content: '';
   box-sizing: border-box;
