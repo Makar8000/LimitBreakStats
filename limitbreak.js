@@ -279,21 +279,18 @@ class BarUI {
       }
     }
 
-    this.update({ line: ['00', undefined, '0000', '0000', '0000'] });
+    this.update({ line: ['36', undefined, '0000'] });
   }
 
   update(e) {
     // 36|2020-09-14T20:37:53.2140000-05:00|3CA0|3|hash
 
     const [logCode, logTimeStamp, hexValue] = e.line;
-    if (logCode !== '00')
+    if (logCode !== '36')
       return;
 
-    console.log(e);
-
     // Process LB
-    this.limitBreakHistory.processLB(e.line[4]);
-    //this.limitBreakHistory.processLB(hexValue);
+    this.limitBreakHistory.processLB(hexValue);
 
     // Update current LB
     const currentLBKey = 'CurrentLB';
@@ -578,6 +575,6 @@ window.addEventListener('DOMContentLoaded', async (e) => {
 
   window.addOverlayListener('LogLine', (e) => barUI.update(e));
   window.addOverlayListener('PartyChanged', (e) => barUI.updateParty(e.party));
-  document.addEventListener('onExampleShowcase', () => barUI.update({ line: ['00', undefined, '0000', '0000', '0000'] }));
+  document.addEventListener('onExampleShowcase', () => barUI.update({ line: ['36', undefined, '0000'] }));
   window.startOverlayEvents();
 });
