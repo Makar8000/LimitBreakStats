@@ -540,7 +540,7 @@ class SettingsUI {
       let elem = document.createElement('option');
       elem.value = value;
       elem.innerHTML = key;
-      if (value === defaultValue)
+      if (value == defaultValue)
         elem.selected = true;
       input.appendChild(elem);
     }
