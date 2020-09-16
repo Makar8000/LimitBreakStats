@@ -1,13 +1,15 @@
 'use strict';
 
 const overlaySettingsKey = 'limitbreak-tracker-settings';
-const resetLine = { line: ['36', undefined, '0000', '2'] };
+const lbLogCode = '36';
+const resetLine = { line: [lbLogCode, undefined, '0000', '3', '0000', '3'] };
 
 // Setting keys
 const textOptions = {
   'None': 'None',
   'Current LB': 'CurrentLB',
   'Time to Next Bar': 'TimeToBar',
+  'Time to Full': 'TimeToMax',
   'Counters (Unknown / Survival / Passive)': 'LBCounts',
   'Passive Ticks': 'PassiveTicks',
   'Surviving Lethals': 'SurviveLethals',
@@ -25,9 +27,9 @@ function getOptionsForKeys(validKeys) {
   return options;
 }
 
-const validSelectKeys = ['None', 'CurrentLB', 'TimeToBar', 'LBCounts'];
+const validSelectKeys = ['None', 'CurrentLB', 'TimeToBar', 'TimeToMax', 'LBCounts'];
 const selectOptions = getOptionsForKeys(validSelectKeys);
-const validDetailKeys = ['CurrentLB', 'TimeToBar', 'SurviveLethals', 'PassiveTicks', 'UnknownSource'];
+const validDetailKeys = ['CurrentLB', 'TimeToBar', 'TimeToMax', 'SurviveLethals', 'PassiveTicks', 'UnknownSource'];
 const detailOptions = getOptionsForKeys(validDetailKeys);
 
 // Format Type enum
@@ -39,18 +41,12 @@ const FormatType = {
   Simplify5: 4,
 };
 
-// Formatting options specific to key
+// Formatting options specific to key. Currently unused.
 const formatOptionsByKey = {
   CurrentLB: {
     maximumFractionDigits: 0,
   },
-  TimeToBar: {
-    maximumFractionDigits: 0,
-  },
-  LBCounts: {
-    maximumFractionDigits: 0,
-  },
-};
+ };
 
 // Auto-generate number formatting options.
 const formatOptions = (() => {
@@ -215,7 +211,7 @@ function formatNumber(num, format, key) {
     return num;
   num = floatNum;
 
-  const options = formatOptionsByKey[key];
+  const options = formatOptionsByKey[key] ? formatOptionsByKey[key] : {};
   const minDigits = options.minimumFractionDigits > 0 ? options.minimumFractionDigits : 0;
 
   switch (parseInt(format)) {
@@ -268,6 +264,7 @@ class BarUI {
         this.elementMap[text].push(textDiv);
       }
     } else {
+      // TODO: WIP
       document.getElementById('settings-container').classList.add('settings-container-tall');
       this.div.classList.add('bar-detailed');
       for (const [value, key] of Object.entries(detailOptions)) {
@@ -322,8 +319,8 @@ class BarUI {
 
   update(e) {
     // 36|2020-09-14T20:37:53.2140000-05:00|3CA0|3|hash
-    const [logCode, logTimeStamp, hexValue, maxBars] = e.line;
-    if (logCode !== '36')
+    const [logCode, logTimeStamp, hexValue, maxBars,] = e.line;
+    if (logCode !== lbLogCode)
       return;
 
     // Process log line
@@ -335,7 +332,10 @@ class BarUI {
     this.setValue(currentLBKey, formattedCurrentLB);
 
     // Update time until next bar
-    this.setValue('TimeToBar', this.limitBreakHistory.formattedTimeToBar());
+    this.setValue('TimeToBar', this.limitBreakHistory.toTimeFormat(this.limitBreakHistory.secondsUntilNextBar()));
+
+    // Update time until max
+    this.setValue('TimeToMax', this.limitBreakHistory.toTimeFormat(this.limitBreakHistory.secondsUntilMax()));
 
     // Update counts
     this.setValue('LBCounts', `${this.limitBreakHistory.unknownCnt} / ${this.limitBreakHistory.surviveLethalCnt} / ${this.limitBreakHistory.passiveCnt}`);

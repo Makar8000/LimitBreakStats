@@ -21,7 +21,7 @@ class LimitBreakHistory {
     // History
     this.hist = [0];
     // Max Number of LB Bars
-    this.bars = 2;
+    this.bars = 3;
     // Party info
     this.party = {
       jobDuplicates: 0,
@@ -49,7 +49,7 @@ class LimitBreakHistory {
     this.hist.push(currentLB);
 
     // Update Counters
-    this.bars = bars;
+    this.bars = Number.parseInt(bars, 10);
     this.updateCounters();
   }
 
@@ -107,14 +107,21 @@ class LimitBreakHistory {
     return Math.ceil(secondUntilNextBar / 3) * 3;
   }
 
-  formattedTimeToBar() {
-    // Formatted time string #m#s
+  secondsUntilMax() {
+    // Calculate the number of seconds until the max LB.
     const currentLB = this.getCurrentValue();
-    if (!currentLB)
+    const passiveGen = this.getPassiveIncrease();
+    const amountUntilMax = (LBAmounts.barSize * this.bars) - currentLB;
+    const secondUntilMax = (amountUntilMax / passiveGen) * LBAmounts.passiveFrequency;
+    return Math.ceil(secondUntilMax / 3) * 3;
+  }
+
+  toTimeFormat(floatSeconds) {
+    if (!this.getCurrentValue())
       return '';
 
-    const secondsUntilNextBar = this.secondsUntilNextBar();
-    const intSeconds = Math.floor(secondsUntilNextBar);
+    // Formatted time string #m#s
+    const intSeconds = Math.floor(floatSeconds);
     const minutes = Math.floor(intSeconds / 60);
     const seconds = intSeconds % 60;
     let str = '';
