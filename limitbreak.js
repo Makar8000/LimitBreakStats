@@ -7,9 +7,27 @@ const textOptions = {
   'None': 'None',
   'Current LB': 'CurrentLB',
   'Time to Next Bar': 'TimeToBar',
-  'Unknown Count / Survive Count / Heal Count / Passive Count': 'LBCounts',
+  'Counters (Unknown / Survive / Heal / Passive)': 'LBCounts',
+  'Passive Ticks': 'PassiveTicks',
+  'Surviving Lethals': 'SurviveLethals',
+  'Critical HP Heals': 'CritHeals',
+  'Unknown Sources': 'UnknownSource',
 };
-const validKeys = ['None', 'CurrentLB', 'TimeToBar', 'LBCounts'];
+
+function getOptionsForKeys(validKeys) {
+  let options = {};
+  for (const [value, key] of Object.entries(textOptions)) {
+    if (!validKeys.includes(key))
+      continue;
+    options[value] = key;
+  }
+  return options;
+}
+
+const validSelectKeys = ['None', 'CurrentLB', 'TimeToBar', 'LBCounts'];
+const selectOptions = getOptionsForKeys(validSelectKeys);
+const validDetailKeys = ['CurrentLB', 'TimeToBar', 'SurviveLethals', 'CritHeals', 'PassiveTicks', 'UnknownSource'];
+const detailOptions = getOptionsForKeys(validDetailKeys);
 
 // Format Type enum
 const FormatType = {
@@ -49,35 +67,41 @@ const formatOptions = (() => {
 
 const configStructure = [
   {
+    id: 'showBar',
+    name: 'Horizontal Mode',
+    type: 'checkbox',
+    default: true,
+  },
+  {
     id: 'leftText',
     name: 'Left Text',
     type: 'select',
-    optionsByType: textOptions,
+    optionsByType: selectOptions,
     default: 'CurrentLB',
   },
   {
     id: 'middleText',
     name: 'Middle Text',
-    optionsByType: textOptions,
+    optionsByType: selectOptions,
     type: 'select',
     default: 'TimeToBar',
   },
   {
     id: 'rightText',
     name: 'Right Text',
-    optionsByType: textOptions,
+    optionsByType: selectOptions,
     type: 'select',
     default: 'LBCounts',
   },
   {
     id: 'barHeight',
-    name: 'Height of the bar',
+    name: 'Container Height',
     type: 'text',
     default: 18,
   },
   {
     id: 'barWidth',
-    name: 'Width of the bar',
+    name: 'Container Width',
     type: 'text',
     default: 300,
   },
@@ -90,45 +114,45 @@ const configStructure = [
   },
   {
     id: 'isRounded',
-    name: 'Enable rounded corners',
+    name: 'Rounded Corners',
     type: 'checkbox',
     default: true,
   },
   {
     id: 'borderSize',
-    name: 'Size of the border',
+    name: 'Border Width',
     type: 'text',
     default: 1,
   },
   {
     id: 'borderColor',
-    name: 'Color of the border',
+    name: 'Border Color',
     type: 'text',
     default: 'black',
   },
   {
+    id: 'bgColor',
+    name: 'Background Color',
+    type: 'text',
+    default: 'rgba(0, 0, 0, 0.6)',
+  },
+  {
     id: 'fontSize',
-    name: 'Size of the font',
+    name: 'Font Size',
     type: 'text',
     default: 14,
   },
   {
     id: 'fontFamily',
-    name: 'Name of the font',
+    name: 'Font Family',
     type: 'text',
     default: 'Tahoma',
   },
   {
     id: 'fontColor',
-    name: 'Color of the font',
+    name: 'Font Color',
     type: 'text',
     default: 'white',
-  },
-  {
-    id: 'bgColor',
-    name: 'Background color',
-    type: 'text',
-    default: 'rgba(0, 0, 0, 0.6)',
   }
 ];
 
@@ -228,18 +252,34 @@ class BarUI {
       right: this.options.rightText,
     };
 
-    for (const [justifyKey, text] of Object.entries(textMap)) {
-      if (!validKeys.includes(text)) {
-        console.error(`Invalid key: ${text}`);
-        continue;
-      }
+    if (this.options.showBar) {
+      document.getElementById('settings-container').classList.remove('settings-container-tall');
+      this.div.classList.remove('bar-detailed');
+      for (const [justifyKey, text] of Object.entries(textMap)) {
+        if (!validSelectKeys.includes(text))
+          continue;
 
-      let textDiv = document.createElement('div');
-      textDiv.classList.add(text);
-      textDiv.style.justifySelf = justifyKey;
-      this.div.appendChild(textDiv);
-      this.elementMap[text] = this.elementMap[text] || [];
-      this.elementMap[text].push(textDiv);
+        let textDiv = document.createElement('div');
+        textDiv.classList.add(text);
+        textDiv.style.justifySelf = justifyKey;
+        this.div.appendChild(textDiv);
+        this.elementMap[text] = this.elementMap[text] || [];
+        this.elementMap[text].push(textDiv);
+      }
+    } else {
+      document.getElementById('settings-container').classList.add('settings-container-tall');
+      this.div.classList.add('bar-detailed');
+      for (const [value, key] of Object.entries(detailOptions)) {
+        if (!validDetailKeys.includes(key))
+          continue;
+
+        let textDiv = document.createElement('div');
+        textDiv.classList.add(key);
+        textDiv.classList.add('detailed');
+        this.div.appendChild(textDiv);
+        this.elementMap[key] = this.elementMap[key] || [];
+        this.elementMap[key].push(textDiv);
+      }
     }
 
     if (this.options.isRounded)
@@ -247,9 +287,6 @@ class BarUI {
     else
       this.div.classList.remove('rounded');
 
-    // TODO: could move settings container down by height of bar
-    // but up to some maximum so it's not hidden if you type in
-    // a ridiculous number, vs the absolute position it is now.
     this.div.style.height = defaultAsPx(this.options.barHeight);
     this.div.style.width = defaultAsPx(this.options.barWidth);
 
@@ -291,6 +328,7 @@ class BarUI {
 
     // Process LB
     this.limitBreakHistory.processLB(hexValue);
+    //this.limitBreakHistory.processLB(hexValue);
 
     // Update current LB
     const currentLBKey = 'CurrentLB';
@@ -298,9 +336,7 @@ class BarUI {
     this.setValue(currentLBKey, formattedCurrentLB);
 
     // Update time until next bar
-    const secondsRemaining = this.limitBreakHistory.secondsUntilNextBar();
-    const formattedTTB = secondsRemaining === null ? '' : toTimeString(secondsRemaining);
-    this.setValue('TimeToBar', formattedTTB);
+    this.setValue('TimeToBar', this.limitBreakHistory.formattedTimeToBar());
 
     // Update counts
     this.setValue('LBCounts', `${this.limitBreakHistory.unknownCnt} / ${this.limitBreakHistory.surviveLethalCnt} / ${this.limitBreakHistory.healCritCnt} / ${this.limitBreakHistory.passiveCnt}`);
@@ -333,13 +369,13 @@ class SettingsUI {
     this.div = settingsDiv;
     this.rebuildFunc = rebuildFunc;
 
-    this.buildUI(settingsDiv, configStructure);
+    this.buildUI(settingsDiv, configStructure, savedConfig);
 
     rebuildFunc(savedConfig);
   }
 
   // Top level UI builder, builds everything.
-  buildUI(container, configStructure) {
+  buildUI(container, configStructure, savedConfig) {
     container.appendChild(this.buildHeader());
     container.appendChild(this.buildHelpText());
     for (const opt of configStructure) {

@@ -17,19 +17,12 @@ const LBAmounts = {
 class LimitBreakHistory {
   constructor() {
     this.history = [0];
-    // TODO: Determine duplicates from PartyChanged event.
     this.jobDuplicates = 0;
-
-    // Limit Break generation from surviving Lethal Damage with shields.
     this.surviveLethalCnt = 0;
-
-    // Limit Break generation from healing critical (<10%) HP.
     this.healCritCnt = 0;
-
-    // Limit Break generation gained passively.
     this.passiveCnt = 0;
 
-    // Generation is unknown.
+    // Source of LB is unknown
     this.unknownCnt = 0;
   }
 
@@ -82,20 +75,25 @@ class LimitBreakHistory {
     return secondUntilNextBar;
   }
 
+  formattedTimeToBar() {
+    const currentLB = this.getCurrentValue();
+    if (!currentLB)
+      return '';
+
+    const secondsUntilNextBar = this.secondsUntilNextBar();
+    const intSeconds = Math.floor(secondsUntilNextBar);
+    const minutes = Math.floor(intSeconds / 60);
+    const seconds = intSeconds % 60;
+    let str = '';
+
+    if (minutes > 0)
+      str = minutes + 'm';
+
+    str += seconds + 's';
+    return str;
+  }
+
   getCurrentValue() {
     return this.hist[this.hist.length - 1];
   }
-}
-
-function toTimeString(floatSeconds) {
-  let intSeconds = Math.floor(floatSeconds);
-  let minutes = Math.floor(intSeconds / 60);
-  let seconds = intSeconds % 60;
-  let str = '';
-
-  if (minutes > 0)
-    str = minutes + 'm';
-
-  str += seconds + 's';
-  return str;
 }
