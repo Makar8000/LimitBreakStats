@@ -386,7 +386,7 @@ class BarUI {
     });
 
     this.limitBreakHistory.party.list = partyList;
-    this.limitBreakHistory.party.jobDuplicates = duplicates;
+    this.limitBreakHistory.party.jobDuplicates = jobDuplicates;
   }
 
   setValue(name, value) {
