@@ -64,7 +64,8 @@ class LimitBreakHistory {
           counters.passiveCnt = counters.passiveCnt + 1;
           break;
         default:
-          console.log("Unknown Amount: " + generatedLB, this.hist);
+          if (this.hist[i] % LBAmounts.barSize !== 0)
+            console.log("Unknown Amount: " + generatedLB, this.hist);
           counters.unknownCnt = counters.unknownCnt + 1;
       }
     }
