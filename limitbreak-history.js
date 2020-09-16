@@ -1,5 +1,7 @@
 'use strict';
 
+// LB data for 5.x+ content
+// TODO: Support <5.x based on zoneID? 
 const LBAmounts = {
   // Amount per LB Bar
   barSize: 10000,
@@ -16,13 +18,20 @@ const LBAmounts = {
 // Records limit break value history
 class LimitBreakHistory {
   constructor() {
-    this.history = [0];
+    // History
+    this.hist = [0];
+    // Max Number of LB Bars
     this.bars = 2;
-    this.jobDuplicates = 0;
+    // Party info
+    this.party = {
+      jobDuplicates: 0,
+      // { id, name, worldId, job, inParty }
+      list: []
+    };
+    // Surviving Lethal + 2, Healing Critical + 1
     this.surviveLethalCnt = 0;
-    this.healCritCnt = 0;
+    // Passive LB Generation
     this.passiveCnt = 0;
-
     // Source of LB is unknown
     this.unknownCnt = 0;
   }
@@ -47,35 +56,36 @@ class LimitBreakHistory {
   updateCounters() {
     const counters = {
       surviveLethalCnt: 0,
-      healCritCnt: 0,
       passiveCnt: 0,
       unknownCnt: 0,
     }
 
     for (let i = 1; i < this.hist.length; i++) {
       const generatedLB = this.hist[i] - this.hist[i - 1];
-      if (generatedLB <= 0)
-        return;
 
-      switch (generatedLB) {
-        case LBAmounts.surviveLethal:
-          counters.surviveLethalCnt = counters.surviveLethalCnt + 1;
-          break;
-        case LBAmounts.healCritical:
-          counters.healCritCnt = counters.healCritCnt + 1;
-          break;
-        case LBAmounts.passiveNonDup:
-          counters.passiveCnt = counters.passiveCnt + 1;
-          break;
-        default:
-          if (this.hist[i] !== this.bars * LBAmounts.barSize)
-            console.log("Unknown Amount: " + generatedLB, this.hist);
-          counters.unknownCnt = counters.unknownCnt + 1;
+      // No gain or LB is reset
+      if (generatedLB <= 0)
+        continue;
+
+      // Passive ticks
+      if (generatedLB === this.getPassiveIncrease()) {
+        counters.passiveCnt = counters.passiveCnt + 1;
+        continue;
       }
+
+      // Surviving Lethal (+2) or Healing <10% HP (+1)
+      if (generatedLB % LBAmounts.healCritical === 0) {
+        counters.surviveLethalCnt = counters.surviveLethalCnt + (generatedLB / 150);
+        continue;
+      }
+
+      // Source is unknown
+      if (this.hist[i] !== this.bars * LBAmounts.barSize)
+        console.log("Unknown Amount: " + generatedLB, this.hist);
+      counters.unknownCnt = counters.unknownCnt + 1;
     }
 
     this.surviveLethalCnt = counters.surviveLethalCnt;
-    this.healCritCnt = counters.healCritCnt;
     this.passiveCnt = counters.passiveCnt;
     this.unknownCnt = counters.unknownCnt;
   }
@@ -84,7 +94,6 @@ class LimitBreakHistory {
     // Reset history and counts
     this.hist = [0];
     this.surviveLethalCnt = 0;
-    this.healCritCnt = 0;
     this.passiveCnt = 0;
     this.unknownCnt = 0;
   }
@@ -92,14 +101,14 @@ class LimitBreakHistory {
   secondsUntilNextBar() {
     // Calculate the number of seconds until the next LB bar.
     const currentLB = this.getCurrentValue();
-    // TODO: determine gen amount for duplicates and determine duplicates via PartyChanged event.
-    const passiveGen = LBAmounts.passiveNonDup;
+    const passiveGen = this.getPassiveIncrease();
     const amountUntilNextBar = LBAmounts.barSize - (currentLB % LBAmounts.barSize);
     const secondUntilNextBar = (amountUntilNextBar / passiveGen) * LBAmounts.passiveFrequency;
     return Math.ceil(secondUntilNextBar / 3) * 3;
   }
 
   formattedTimeToBar() {
+    // Formatted time string #m#s
     const currentLB = this.getCurrentValue();
     if (!currentLB)
       return '';
@@ -119,5 +128,10 @@ class LimitBreakHistory {
 
   getCurrentValue() {
     return this.hist[this.hist.length - 1];
+  }
+
+  getPassiveIncrease() {
+    // TODO: determine passive amounts based on party comp
+    return LBAmounts.passiveNonDup;
   }
 }

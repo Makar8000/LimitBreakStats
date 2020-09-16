@@ -8,7 +8,7 @@ const textOptions = {
   'None': 'None',
   'Current LB': 'CurrentLB',
   'Time to Next Bar': 'TimeToBar',
-  'Counters (Unknown / Survive / Heal / Passive)': 'LBCounts',
+  'Counters (Unknown / Survival / Passive)': 'LBCounts',
   'Passive Ticks': 'PassiveTicks',
   'Surviving Lethals': 'SurviveLethals',
   'Critical HP Heals': 'CritHeals',
@@ -27,7 +27,7 @@ function getOptionsForKeys(validKeys) {
 
 const validSelectKeys = ['None', 'CurrentLB', 'TimeToBar', 'LBCounts'];
 const selectOptions = getOptionsForKeys(validSelectKeys);
-const validDetailKeys = ['CurrentLB', 'TimeToBar', 'SurviveLethals', 'CritHeals', 'PassiveTicks', 'UnknownSource'];
+const validDetailKeys = ['CurrentLB', 'TimeToBar', 'SurviveLethals', 'PassiveTicks', 'UnknownSource'];
 const detailOptions = getOptionsForKeys(validDetailKeys);
 
 // Format Type enum
@@ -338,19 +338,22 @@ class BarUI {
     this.setValue('TimeToBar', this.limitBreakHistory.formattedTimeToBar());
 
     // Update counts
-    this.setValue('LBCounts', `${this.limitBreakHistory.unknownCnt} / ${this.limitBreakHistory.surviveLethalCnt} / ${this.limitBreakHistory.healCritCnt} / ${this.limitBreakHistory.passiveCnt}`);
+    this.setValue('LBCounts', `${this.limitBreakHistory.unknownCnt} / ${this.limitBreakHistory.surviveLethalCnt} / ${this.limitBreakHistory.passiveCnt}`);
   }
 
   updateParty(party) {
     // Updates the job duplicate counter
-    let jobMap = {};
-    let duplicates = 0;
-    party.filter(member => member.inParty).forEach(member => {
+    let jobDuplicates = 0;
+    const jobMap = {};
+    const partyList = party.filter(member => member.inParty);
+    partyList.forEach(member => {
       if (jobMap[member.job])
-        duplicates++;
+        jobDuplicates++;
       jobMap[member.job] = true;
     });
-    this.limitBreakHistory.jobDuplicates = duplicates;
+
+    this.limitBreakHistory.party.list = partyList;
+    this.limitBreakHistory.party.jobDuplicates = duplicates;
   }
 
   setValue(name, value) {
