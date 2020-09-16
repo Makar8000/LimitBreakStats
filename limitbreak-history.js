@@ -26,7 +26,7 @@ class LimitBreakHistory {
     this.unknownCnt = 0;
   }
 
-  processLB(hex, line) {
+  updateHistory(hex) {
     // Get the current total amount of LB
     const currentLB = Number.parseInt(hex, 16);
     if (!currentLB) {
@@ -36,28 +36,43 @@ class LimitBreakHistory {
     }
 
     // Add new value to history
-    const previousLB = this.getCurrentValue();
     this.hist.push(currentLB);
+    this.updateCounters();
+  }
 
-    // Update counters
-    const generatedLB = currentLB - previousLB;
-    if (!generatedLB)
-      return;
-
-    switch (generatedLB) {
-      case LBAmounts.surviveLethal:
-        this.surviveLethalCnt = this.surviveLethalCnt + 1;
-        break;
-      case LBAmounts.healCritical:
-        this.healCritCnt = this.healCritCnt + 1;
-        break;
-      case LBAmounts.passiveNonDup:
-        this.passiveCnt = this.passiveCnt + 1;
-        break;
-      default:
-        console.log("Unknown Amount: " + generatedLB, this.hist, previousLB, currentLB, line)
-        this.unknownCnt = this.unknownCnt + 1;
+  updateCounters() {
+    const counters = {
+      surviveLethalCnt: 0,
+      healCritCnt: 0,
+      passiveCnt: 0,
+      unknownCnt: 0,
     }
+
+    for (let i = 1; i < this.hist.length; i++) {
+      const generatedLB = this.hist[i] - this.hist[i - 1];
+      if (generatedLB <= 0)
+        return;
+
+      switch (generatedLB) {
+        case LBAmounts.surviveLethal:
+          counters.surviveLethalCnt = counters.surviveLethalCnt + 1;
+          break;
+        case LBAmounts.healCritical:
+          counters.healCritCnt = counters.healCritCnt + 1;
+          break;
+        case LBAmounts.passiveNonDup:
+          counters.passiveCnt = counters.passiveCnt + 1;
+          break;
+        default:
+          console.log("Unknown Amount: " + generatedLB, this.hist);
+          counters.unknownCnt = counters.unknownCnt + 1;
+      }
+    }
+
+    this.surviveLethalCnt = counters.surviveLethalCnt;
+    this.healCritCnt = counters.healCritCnt;
+    this.passiveCnt = counters.passiveCnt;
+    this.unknownCnt = counters.unknownCnt;
   }
 
   resetLB() {
@@ -76,7 +91,7 @@ class LimitBreakHistory {
     const passiveGen = LBAmounts.passiveNonDup;
     const amountUntilNextBar = LBAmounts.barSize - (currentLB % LBAmounts.barSize);
     const secondUntilNextBar = (amountUntilNextBar / passiveGen) * LBAmounts.passiveFrequency;
-    return secondUntilNextBar;
+    return Math.ceil(secondUntilNextBar / 3) * 3;
   }
 
   formattedTimeToBar() {

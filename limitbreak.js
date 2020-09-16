@@ -326,10 +326,8 @@ class BarUI {
     if (logCode !== '36')
       return;
 
-    //console.log(e);
     // Process LB
-    this.limitBreakHistory.processLB(hexValue, e.line);
-    //this.limitBreakHistory.processLB(hexValue);
+    this.limitBreakHistory.updateHistory(hexValue);
 
     // Update current LB
     const currentLBKey = 'CurrentLB';
