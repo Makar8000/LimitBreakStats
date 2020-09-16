@@ -46,7 +46,7 @@ const formatOptionsByKey = {
   CurrentLB: {
     maximumFractionDigits: 0,
   },
- };
+};
 
 // Auto-generate number formatting options.
 const formatOptions = (() => {
@@ -64,43 +64,58 @@ const formatOptions = (() => {
 
 const configStructure = [
   {
-    id: 'showBar',
-    name: 'Horizontal Mode',
-    type: 'checkbox',
-    default: true,
-  },
-  {
     id: 'leftText',
     name: 'Left Text',
     type: 'select',
-    optionsByType: selectOptions,
+    options: selectOptions,
     default: 'CurrentLB',
+    headerBefore: 'Horizonal Mode Options',
   },
   {
     id: 'middleText',
     name: 'Middle Text',
-    optionsByType: selectOptions,
+    options: selectOptions,
     type: 'select',
     default: 'TimeToBar',
   },
   {
     id: 'rightText',
     name: 'Right Text',
-    optionsByType: selectOptions,
+    options: selectOptions,
     type: 'select',
     default: 'LBCounts',
   },
   {
-    id: 'barHeight',
+    id: 'hModeBarHeight',
     name: 'Container Height',
     type: 'text',
     default: 18,
   },
   {
-    id: 'barWidth',
+    id: 'hModeBarWidth',
     name: 'Container Width',
     type: 'text',
     default: 300,
+  },
+  {
+    id: 'vModeBarHeight',
+    name: 'Container Height',
+    type: 'text',
+    default: 120,
+    headerBefore: 'Vertical Mode Options',
+  },
+  {
+    id: 'vModeBarWidth',
+    name: 'Container Width',
+    type: 'text',
+    default: 180,
+  },
+  {
+    id: 'showBar',
+    name: 'Horizontal Mode',
+    type: 'checkbox',
+    default: true,
+    headerBefore: 'Global Options',
   },
   {
     id: 'numberFormat',
@@ -243,15 +258,18 @@ class BarUI {
     // built from this.options.elements.
     this.elementMap = {};
 
-    const textMap = {
-      left: this.options.leftText,
-      center: this.options.middleText,
-      right: this.options.rightText,
-    };
-
     if (this.options.showBar) {
-      document.getElementById('settings-container').classList.remove('settings-container-tall');
-      this.div.classList.remove('bar-detailed');
+      // Horizontal Mode
+      this.div.classList.remove('bar-vertical');
+      this.div.style.height = defaultAsPx(this.options.hModeBarHeight);
+      this.div.style.width = defaultAsPx(this.options.hModeBarWidth);
+
+      const textMap = {
+        left: this.options.leftText,
+        center: this.options.middleText,
+        right: this.options.rightText,
+      };
+
       for (const [justifyKey, text] of Object.entries(textMap)) {
         if (!validSelectKeys.includes(text))
           continue;
@@ -264,16 +282,29 @@ class BarUI {
         this.elementMap[text].push(textDiv);
       }
     } else {
-      // TODO: WIP
-      document.getElementById('settings-container').classList.add('settings-container-tall');
-      this.div.classList.add('bar-detailed');
+      // Vertical Mode
+      this.div.classList.add('bar-vertical');
+      this.div.style.height = defaultAsPx(this.options.vModeBarHeight);
+      this.div.style.width = defaultAsPx(this.options.vModeBarWidth);
+
       for (const [value, key] of Object.entries(detailOptions)) {
         if (!validDetailKeys.includes(key))
           continue;
 
+        // Add label
+        let labelDiv = document.createElement('div');
+        const labelKey = `${key}-label`;
+        labelDiv.classList.add(labelKey);
+        labelDiv.style.justifySelf = 'left';
+        labelDiv.innerText = `${value}:`;
+        this.div.appendChild(labelDiv);
+        this.elementMap[labelKey] = this.elementMap[labelKey] || [];
+        this.elementMap[labelKey].push(labelDiv);
+
+        // Add value
         let textDiv = document.createElement('div');
         textDiv.classList.add(key);
-        textDiv.classList.add('detailed');
+        textDiv.style.justifySelf = 'right';
         this.div.appendChild(textDiv);
         this.elementMap[key] = this.elementMap[key] || [];
         this.elementMap[key].push(textDiv);
@@ -284,9 +315,6 @@ class BarUI {
       this.div.classList.add('rounded');
     else
       this.div.classList.remove('rounded');
-
-    this.div.style.height = defaultAsPx(this.options.barHeight);
-    this.div.style.width = defaultAsPx(this.options.barWidth);
 
     let borderStyle = defaultAsPx(this.options.borderSize);
     borderStyle += ' solid ' + this.options.borderColor;
@@ -304,11 +332,13 @@ class BarUI {
     for (const el in this.elementMap) {
       for (let div of this.elementMap[el]) {
         // Add some text to give div a non-zero height.
+        const innerText = div.innerText;
         div.innerText = 'XXX';
         let divHeight = div.clientHeight;
-        div.innerText = '';
+        div.innerText = innerText;
         if (divHeight <= containerHeight)
           continue;
+        // Update position
         div.style.position = 'relative';
         div.style.top = defaultAsPx((containerHeight - divHeight) / 2.0);
       }
@@ -319,7 +349,7 @@ class BarUI {
 
   update(e) {
     // 36|2020-09-14T20:37:53.2140000-05:00|3CA0|3|hash
-    const [logCode, logTimeStamp, hexValue, maxBars,] = e.line;
+    const [logCode, logTimeStamp, hexValue, maxBars] = e.line;
     if (logCode !== lbLogCode)
       return;
 
@@ -339,6 +369,9 @@ class BarUI {
 
     // Update counts
     this.setValue('LBCounts', `${this.limitBreakHistory.unknownCnt} / ${this.limitBreakHistory.surviveLethalCnt} / ${this.limitBreakHistory.passiveCnt}`);
+    this.setValue('PassiveTicks', this.limitBreakHistory.passiveCnt);
+    this.setValue('SurviveLethals', this.limitBreakHistory.surviveLethalCnt);
+    this.setValue('UnknownSource', this.limitBreakHistory.unknownCnt);
   }
 
   updateParty(party) {
@@ -379,8 +412,10 @@ class SettingsUI {
   // Top level UI builder, builds everything.
   buildUI(container, configStructure, savedConfig) {
     container.appendChild(this.buildHeader());
-    container.appendChild(this.buildHelpText());
+    container.appendChild(this.buildAltHeader('(🔒lock overlay to hide settings)', 'settings-helptext'));
     for (const opt of configStructure) {
+      if (opt.headerBefore)
+        container.appendChild(this.buildAltHeader(opt.headerBefore));
       let buildFunc = {
         checkbox: this.buildCheckbox,
         select: this.buildSelect,
@@ -402,10 +437,10 @@ class SettingsUI {
     return div;
   }
 
-  buildHelpText() {
+  buildAltHeader(label, className) {
     let div = document.createElement('div');
-    div.innerHTML = '(🔒lock overlay to hide settings)';
-    div.classList.add('settings-helptext');
+    div.innerHTML = label;
+    div.classList.add(className ? className : 'settings-altheader');
     return div;
   }
 
@@ -501,8 +536,7 @@ class SettingsUI {
     const defaultValue = this.getOption(opt.id, opt.default);
     input.onchange = () => this.setOption(opt.id, input.value);
 
-    const innerOptions = opt.optionsByType ? opt.optionsByType : opt.options;
-    for (const [key, value] of Object.entries(innerOptions)) {
+    for (const [key, value] of Object.entries(opt.options)) {
       let elem = document.createElement('option');
       elem.value = value;
       elem.innerHTML = key;
