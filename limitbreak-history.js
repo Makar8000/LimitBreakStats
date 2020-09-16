@@ -17,6 +17,7 @@ const LBAmounts = {
 class LimitBreakHistory {
   constructor() {
     this.history = [0];
+    this.bars = 2;
     this.jobDuplicates = 0;
     this.surviveLethalCnt = 0;
     this.healCritCnt = 0;
@@ -26,17 +27,20 @@ class LimitBreakHistory {
     this.unknownCnt = 0;
   }
 
-  updateHistory(hex) {
+  updateHistory(hex, bars) {
     // Get the current total amount of LB
     const currentLB = Number.parseInt(hex, 16);
     if (!currentLB) {
       // Reset history if current value is 0
-      this.resetLB();
+      this.reset();
       return;
     }
 
     // Add new value to history
     this.hist.push(currentLB);
+
+    // Update Counters
+    this.bars = bars;
     this.updateCounters();
   }
 
@@ -64,7 +68,7 @@ class LimitBreakHistory {
           counters.passiveCnt = counters.passiveCnt + 1;
           break;
         default:
-          if (this.hist[i] % LBAmounts.barSize !== 0)
+          if (this.hist[i] !== this.bars * LBAmounts.barSize)
             console.log("Unknown Amount: " + generatedLB, this.hist);
           counters.unknownCnt = counters.unknownCnt + 1;
       }
@@ -76,7 +80,7 @@ class LimitBreakHistory {
     this.unknownCnt = counters.unknownCnt;
   }
 
-  resetLB() {
+  reset() {
     // Reset history and counts
     this.hist = [0];
     this.surviveLethalCnt = 0;

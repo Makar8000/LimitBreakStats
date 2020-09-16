@@ -1,6 +1,7 @@
 'use strict';
 
 const overlaySettingsKey = 'limitbreak-tracker-settings';
+const resetLine = { line: ['36', undefined, '0000', '2'] };
 
 // Setting keys
 const textOptions = {
@@ -316,18 +317,17 @@ class BarUI {
       }
     }
 
-    this.update({ line: ['36', undefined, '0000'] });
+    this.update(resetLine);
   }
 
   update(e) {
     // 36|2020-09-14T20:37:53.2140000-05:00|3CA0|3|hash
-
-    const [logCode, logTimeStamp, hexValue] = e.line;
+    const [logCode, logTimeStamp, hexValue, maxBars] = e.line;
     if (logCode !== '36')
       return;
 
-    // Process LB
-    this.limitBreakHistory.updateHistory(hexValue);
+    // Process log line
+    this.limitBreakHistory.updateHistory(hexValue, maxBars);
 
     // Update current LB
     const currentLBKey = 'CurrentLB';
@@ -610,6 +610,6 @@ window.addEventListener('DOMContentLoaded', async (e) => {
 
   window.addOverlayListener('LogLine', (e) => barUI.update(e));
   window.addOverlayListener('PartyChanged', (e) => barUI.updateParty(e.party));
-  document.addEventListener('onExampleShowcase', () => barUI.update({ line: ['36', undefined, '0000'] }));
+  document.addEventListener('onExampleShowcase', () => barUI.update(resetLine));
   window.startOverlayEvents();
 });
