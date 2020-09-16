@@ -26,7 +26,7 @@ class LimitBreakHistory {
     this.unknownCnt = 0;
   }
 
-  processLB(hex) {
+  processLB(hex, line) {
     // Get the current total amount of LB
     const currentLB = Number.parseInt(hex, 16);
     if (!currentLB) {
@@ -41,6 +41,9 @@ class LimitBreakHistory {
 
     // Update counters
     const generatedLB = currentLB - previousLB;
+    if (!generatedLB)
+      return;
+
     switch (generatedLB) {
       case LBAmounts.surviveLethal:
         this.surviveLethalCnt = this.surviveLethalCnt + 1;
@@ -52,6 +55,7 @@ class LimitBreakHistory {
         this.passiveCnt = this.passiveCnt + 1;
         break;
       default:
+        console.log("Unknown Amount: " + generatedLB, this.hist, previousLB, currentLB, line)
         this.unknownCnt = this.unknownCnt + 1;
     }
   }
