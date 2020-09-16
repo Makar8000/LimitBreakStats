@@ -8,4 +8,4 @@ This code is a modified version of the targetbars overlays written by [quisquous
 
 Instructions on how to use this overlay will (maybe) be written later.
 
-Overlay URL is `https://Makar8000.github.io/LimitBreakStats/`
+Overlay URL is `https://makar8000.github.io/LimitBreakStats/`
