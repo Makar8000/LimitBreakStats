@@ -5,14 +5,24 @@
 const LBAmounts = {
   // Amount per LB Bar
   barSize: 10000,
-  // Surviving lethal damage.
-  surviveLethal: 300,
-  // Healing critical (<10%) HP.
-  healCritical: 150,
-  // Passive generation for non-duplicate comps.
-  passiveNonDup: 220,
   // Frequency of passive generation (in seconds).
   passiveFrequency: 3,
+  fullPartyAmounts: {
+    // Surviving lethal damage.
+    surviveLethal: 300,
+    // Healing critical (<10%) HP.
+    healCritical: 600,
+    // Passive generation for non-duplicate comps.
+    passiveNonDup: 220,
+  },
+  lightPartyAmounts: {
+    // Surviving lethal damage.
+    surviveLethal: 100,
+    // Healing critical (<10%) HP.
+    healCritical: 200,
+    // Passive generation for non-duplicate comps.
+    passiveNonDup: 75,
+  }
 };
 
 // Records limit break value history
@@ -60,6 +70,7 @@ class LimitBreakHistory {
       unknownCnt: 0,
     }
 
+    const lbAmounts = this.getLBAmountsForParty();
     for (let i = 1; i < this.hist.length; i++) {
       const generatedLB = this.hist[i] - this.hist[i - 1];
 
@@ -68,20 +79,20 @@ class LimitBreakHistory {
         continue;
 
       // Passive ticks
-      if (generatedLB === this.getPassiveIncrease()) {
+      if (generatedLB === lbAmounts.passive) {
         counters.passiveCnt = counters.passiveCnt + 1;
         continue;
       }
 
       // Surviving Lethal (+2) or Healing <10% HP (+1)
-      if (generatedLB % LBAmounts.healCritical === 0) {
-        counters.surviveLethalCnt = counters.surviveLethalCnt + (generatedLB / 150);
+      if (generatedLB % lbAmounts.surviveLethal === 0) {
+        counters.surviveLethalCnt = counters.surviveLethalCnt + (generatedLB / lbAmounts.surviveLethal);
         continue;
       }
 
       // Source is unknown
-      if (this.hist[i] !== this.bars * LBAmounts.barSize)
-        console.log("Unknown Amount: " + generatedLB, this.hist);
+      if (this.hist[i] !== this.bars * lbAmounts.barSize)
+        console.log("Unknown Amount: " + generatedLB, this.hist, this.party);
       counters.unknownCnt = counters.unknownCnt + 1;
     }
 
@@ -100,19 +111,19 @@ class LimitBreakHistory {
 
   secondsUntilNextBar() {
     // Calculate the number of seconds until the next LB bar.
+    const lbAmounts = this.getLBAmountsForParty();
     const currentLB = this.getCurrentValue();
-    const passiveGen = this.getPassiveIncrease();
     const amountUntilNextBar = LBAmounts.barSize - (currentLB % LBAmounts.barSize);
-    const secondUntilNextBar = (amountUntilNextBar / passiveGen) * LBAmounts.passiveFrequency;
+    const secondUntilNextBar = (amountUntilNextBar / lbAmounts.passive) * LBAmounts.passiveFrequency;
     return Math.ceil(secondUntilNextBar / 3) * 3;
   }
 
   secondsUntilMax() {
     // Calculate the number of seconds until the max LB.
+    const lbAmounts = this.getLBAmountsForParty();
     const currentLB = this.getCurrentValue();
-    const passiveGen = this.getPassiveIncrease();
     const amountUntilMax = (LBAmounts.barSize * this.bars) - currentLB;
-    const secondUntilMax = (amountUntilMax / passiveGen) * LBAmounts.passiveFrequency;
+    const secondUntilMax = (amountUntilMax / lbAmounts.passive) * LBAmounts.passiveFrequency;
     return Math.ceil(secondUntilMax / 3) * 3;
   }
 
@@ -137,8 +148,11 @@ class LimitBreakHistory {
     return this.hist[this.hist.length - 1];
   }
 
-  getPassiveIncrease() {
+  getLBAmountsForParty() {
     // TODO: determine passive amounts based on party comp
-    return LBAmounts.passiveNonDup;
+    let key = 'fullPartyAmounts';
+    if (this.party.list.length < 8)
+      key = 'lightPartyAmounts';
+    return { ...LBAmounts, ...LBAmounts[key], passive: LBAmounts[key].passiveNonDup };
   }
 }
