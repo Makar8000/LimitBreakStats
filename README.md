@@ -40,5 +40,5 @@ You can find more information about the Limit Break logline in the [LogGuide](ht
 These numbers are specific to Shadowbringers content. 
 * **Survival:** `300` per player (`100` in light parties). Surviving lethal damage using shields that would otherwise kill you. Does not consider damage mitigated through boss debuffs.
 * **Healing Low HP:** `300` per player healed (`100` in light parties). Getting healed when you are below 10% HP. Amount is doubled for single-target heals. HoT ticks do not count. 
-* **Passive:** `220` every 3 seconds (`75` for light parties). Having duplicate jobs will only decrease the amount per tick.
+* **Passive:** `220` every three seconds (`75` for light parties). Having duplicate jobs will only decrease the amount per tick.
 * **Mechanics:** Some mechanics, such as interrupting a boss, will generated LB. This amount varies depending on the mechanic and content.
