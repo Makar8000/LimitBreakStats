@@ -4,7 +4,7 @@ An ACT overlay for displaying limit break statistics such as exact amount, sourc
 
 This code is a modified version of the targetbars overlays written by [quisquous](https://github.com/quisquous). You can find the original code on the official [OverlayPlugin](https://github.com/ngld/OverlayPlugin) repo. 
 
-English is the only language option available as I do not have the will to maintain multi-language functionality - sorry!
+English is the only language option available as I do not have the will to maintain multi-language support - sorry!
 
 ### Installation
 
