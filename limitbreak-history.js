@@ -34,7 +34,8 @@ class LimitBreakHistory {
       // { id, name, worldId, job, inParty }
       list: []
     };
-    // Surviving Lethal + 2, Healing Critical + 1
+    // Surviving Lethal or Healing Critical
+    // Increases by 2 if the source was a single-target heal
     this.surviveLethalCnt = 0;
     // Passive LB Generation
     this.passiveCnt = 0;
@@ -156,7 +157,7 @@ class LimitBreakHistory {
 
 // Gets a map of LB increments for debugging purposes
 const debugFromLog = log => {
-  const values = log.split('\n').map(line => { return Number.parseInt(line.substr(line.length - 4), 16) });
+  const values = log.split('\n').map(line => Number.parseInt(line.substr(line.length - 4), 16));
   const results = { counts: {}, events: {} };
 
   for (let i = 1; i < values.length; i++) {
@@ -172,7 +173,7 @@ const debugFromLog = log => {
   return results;
 }
 
-// Credits: https://github.com/quisquous/cactbot/pull/1794
+// Credit / Taken from: https://github.com/quisquous/cactbot/pull/1794
 const kTankJobs = ['GLA', 'PLD', 'MRD', 'WAR', 'DRK', 'GNB'];
 const kHealerJobs = ['CNJ', 'WHM', 'SCH', 'AST'];
 const kMeleeDpsJobs = ['PGL', 'MNK', 'LNC', 'DRG', 'ROG', 'NIN', 'SAM'];

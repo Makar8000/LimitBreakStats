@@ -1,5 +1,7 @@
 ## Limit Break Stats Overlay
 
+**This overlay is a work-in-progress.** Some information, such as passive generation in non-standard parties, is not completed yet.
+
 An ACT overlay for displaying limit break statistics such as exact amount, source counts, and time estimates.
 
 This code is a modified version of the targetbars overlays written by [quisquous](https://github.com/quisquous). You can find the original code on the official [OverlayPlugin](https://github.com/ngld/OverlayPlugin) repo. 
