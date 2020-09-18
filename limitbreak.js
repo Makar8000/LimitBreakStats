@@ -378,12 +378,22 @@ class BarUI {
     // Updates the job duplicate counter
     let jobDuplicates = 0;
     const jobMap = {};
+    const roleMap = {};
     const partyList = party.filter(member => member.inParty);
     partyList.forEach(member => {
       if (jobMap[member.job])
         jobDuplicates++;
       jobMap[member.job] = true;
+
+      let role = jobToRoleMap[kJobEnumToName[member.job]];
+      if (roleMap[role])
+        roleMap[role]++;
+      else
+        roleMap[role] = 1;
     });
+
+    if (partyList.length === 8 && (roleMap['dps'] !== 4 || roleMap['tank'] !== 2 || roleMap['healer'] !== 2))
+      jobDuplicates++;
 
     this.limitBreakHistory.party.list = partyList;
     this.limitBreakHistory.party.jobDuplicates = jobDuplicates;

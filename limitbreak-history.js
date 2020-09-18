@@ -13,7 +13,7 @@ const LBAmounts = {
     // Healing critical (<10%) HP.
     healCritical: 600,
     // Passive generation for non-duplicate comps.
-    passiveNonDup: 220,
+    passiveScale: [220, 170, 160, 154, 144, 140],
   },
   lightPartyAmounts: {
     // Surviving lethal damage.
@@ -21,7 +21,7 @@ const LBAmounts = {
     // Healing critical (<10%) HP.
     healCritical: 200,
     // Passive generation for non-duplicate comps.
-    passiveNonDup: 75,
+    passiveScale: [75],
   }
 };
 
@@ -149,10 +149,110 @@ class LimitBreakHistory {
   }
 
   getLBAmountsForParty() {
-    // TODO: determine passive amounts based on party comp
-    let key = 'fullPartyAmounts';
-    if (this.party.list.length < 8)
-      key = 'lightPartyAmounts';
-    return { ...LBAmounts, ...LBAmounts[key], passive: LBAmounts[key].passiveNonDup };
+    if (this.party.list.length < 8) {
+      return {
+        ...LBAmounts,
+        ...LBAmounts.lightPartyAmounts,
+        passive: LBAmounts.lightPartyAmounts.passiveScale[0]
+      };
+    }
+
+    let scale = LBAmounts.fullPartyAmounts.passiveScale;
+    return {
+      ...LBAmounts,
+      ...LBAmounts.fullPartyAmounts,
+      passive: scale[Math.min(this.jobDuplicates, scale.length - 1)]
+    };
   }
 }
+
+// Gets a map of LB increments for debugging purposes
+const debugFromLog = log => {
+  const values = log.split('\n').map(line => { return Number.parseInt(line.substr(line.length - 4), 16) });
+  const results = { counts: {}, events: {} };
+
+  for (let i = 1; i < values.length; i++) {
+    let gain = values[i] - values[i - 1];
+    if (gain <= 0)
+      continue;
+    results.counts[gain] = results.counts[gain] ? results.counts[gain] + 1 : 1;
+    if (results.events[gain])
+      results.events[gain].push(values[i].toString(16).toUpperCase());
+    else
+      results.events[gain] = [values[i].toString(16).toUpperCase()];
+  }
+  return results;
+}
+
+// Credits: https://github.com/quisquous/cactbot/pull/1794
+const kTankJobs = ['GLA', 'PLD', 'MRD', 'WAR', 'DRK', 'GNB'];
+const kHealerJobs = ['CNJ', 'WHM', 'SCH', 'AST'];
+const kMeleeDpsJobs = ['PGL', 'MNK', 'LNC', 'DRG', 'ROG', 'NIN', 'SAM'];
+const kRangedDpsJobs = ['ARC', 'BRD', 'DNC', 'MCH'];
+const kCasterDpsJobs = ['BLU', 'RDM', 'BLM', 'SMN', 'ACN', 'THM'];
+const kDpsJobs = [...kMeleeDpsJobs, ...kRangedDpsJobs, ...kCasterDpsJobs];
+const kCraftingJobs = ['CRP', 'BSM', 'ARM', 'GSM', 'LTW', 'WVR', 'ALC', 'CUL'];
+const kGatheringJobs = ['MIN', 'BTN', 'FSH'];
+const kAllRoles = ['tank', 'healer', 'dps', 'crafter', 'gatherer', 'none'];
+
+const kJobEnumToName = {
+  0: 'NONE',
+  1: 'GLA',
+  2: 'PGL',
+  3: 'MRD',
+  4: 'LNC',
+  5: 'ARC',
+  6: 'CNJ',
+  7: 'THM',
+  8: 'CRP',
+  9: 'BSM',
+  10: 'ARM',
+  11: 'GSM',
+  12: 'LTW',
+  13: 'WVR',
+  14: 'ALC',
+  15: 'CUL',
+  16: 'MIN',
+  17: 'BTN',
+  18: 'FSH',
+  19: 'PLD',
+  20: 'MNK',
+  21: 'WAR',
+  22: 'DRG',
+  23: 'BRD',
+  24: 'WHM',
+  25: 'BLM',
+  26: 'ACN',
+  27: 'SMN',
+  28: 'SCH',
+  29: 'ROG',
+  30: 'NIN',
+  31: 'MCH',
+  32: 'DRK',
+  33: 'AST',
+  34: 'SAM',
+  35: 'RDM',
+  36: 'BLU',
+  37: 'GNB',
+  38: 'DNC',
+};
+
+const jobToRoleMap = (() => {
+  const addToMap = (map, keys, value) => keys.forEach((key) => map.set(key, value));
+
+  const map = new Map([['NONE', 'none']]);
+  addToMap(map, kTankJobs, 'tank');
+  addToMap(map, kHealerJobs, 'healer');
+  addToMap(map, kDpsJobs, 'dps');
+  addToMap(map, kCraftingJobs, 'crafter');
+  addToMap(map, kGatheringJobs, 'gatherer');
+
+  return new Proxy(map, {
+    get: function (target, element) {
+      if (target.has(element))
+        return target.get(element);
+      console.log(`Unknown job role ${element}`);
+      return '';
+    },
+  });
+})();
