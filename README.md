@@ -29,7 +29,7 @@ English is the only language option available as I do not have the will to maint
 
 ### How it Works
 
-The logline for Limit Break updates provides information on the current state of LB, as well as the max number of LB bars. This plugin keeps a history of these lines. Each time the total LB amount is updated, we calculate the increase by subtracting the previous. We then check this increase against a map of known values to determine the source of generation. For determining the amount used for passive generation, the `PartyChanged` event is used to keep track of party composition.  
+The logline for Limit Break updates provides information on the current state of LB, as well as the max number of LB bars. This overlay keeps a history of these lines. Each time the total LB amount is updated, it calculates the increase by subtracting the previous. It then checks this increase against a map of known values to determine the source of generation. For determining the amount used for passive generation, the `PartyChanged` event is used to keep track of party composition.  
 
 This method of determining the source has some problems. If the amount gained exceeds the cap for example, it will not be possible to determine the source.
 
