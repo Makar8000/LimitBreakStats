@@ -22,7 +22,7 @@ English is the only language option available as I do not have the will to maint
 * `Current LB`: The exact amount of LB that you currently have. Each LB bar is `10,000` points.
 * `Time to Next Bar`: The estimated amount of time until your next bar. This is assuming passive-only generation.
 * `Time to Max` The estimated amount of time until you hit LB cap. This is assuming passive-only generation.
-* `Counters (Survival)`: The amount of times you have generated LB through surviving LB or healing critically-low (<10%) HP. This counter increases by `2` if the source was a single-target heal. See [Sources of LB Generation](https://github.com/Makar8000/LimitBreakStats#sources-of-lb-generation) for more info.
+* `Counters (Survival)`: The amount of times you have generated LB through surviving lethal damage or healing critically-low (<10%) HP. This counter increases by `2` if the source was a single-target heal. See [Sources of LB Generation](https://github.com/Makar8000/LimitBreakStats#sources-of-lb-generation) for more info.
 * `Counters (Passive)`: The amount of times you have generated LB passively.
 * `Counters (Unknown)`: The amount of times you have generated LB from an unknown source. Usually this is due to getting full LB. It can also happen in situations where LB is generated through mechanics, such as interrupting. See [Sources of LB Generation](https://github.com/Makar8000/LimitBreakStats#sources-of-lb-generation) for more info.
 
