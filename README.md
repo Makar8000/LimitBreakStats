@@ -37,7 +37,7 @@ You can find more information about the Limit Break logline in the [LogGuide](ht
 
 ### Sources of LB Generation
 
-These numbers are specific to Shadowbringers content. The amount you gain increases with the max number of Limit Break bars the party can have.
+These numbers are specific to Shadowbringers content. The amount you generate scales with the max number of Limit Break bars the party can have.
 * **Survival:** `100` / `200` / `300` per player. Surviving lethal damage using shields that would otherwise kill you. Does not consider damage mitigated through boss debuffs.
 * **Healing Low HP:** `100` / `200` / `300` per player healed. Getting healed when you are below 10% HP. Amount is doubled for single-target heals. HoT ticks do not count. 
 * **Passive:** `75` / `180` / `220` every three seconds. Having duplicate jobs or a non-standard comp in a "High-end Duty" will decrease the amount per tick. The scaling for this is as follows: `220 > 170 > 160 > 154 > 144 > 140`.
