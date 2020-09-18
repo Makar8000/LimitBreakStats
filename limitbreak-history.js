@@ -1,28 +1,24 @@
 'use strict';
 
 // LB data for 5.x+ content
-// TODO: Support <5.x based on zoneID? 
 const LBAmounts = {
   // Amount per LB Bar
   barSize: 10000,
   // Frequency of passive generation (in seconds).
   passiveFrequency: 3,
-  fullPartyAmounts: {
-    // Surviving lethal damage.
-    surviveLethal: 300,
-    // Healing critical (<10%) HP.
-    healCritical: 600,
-    // Passive generation for non-duplicate comps.
-    passiveScale: [220, 170, 160, 154, 144, 140],
-  },
-  lightPartyAmounts: {
-    // Surviving lethal damage.
-    surviveLethal: 100,
-    // Healing critical (<10%) HP.
-    healCritical: 200,
-    // Passive generation for non-duplicate comps.
-    passiveScale: [75],
-  }
+  // Surviving Lethal / Healing Critical (<10%) HP scale
+  surviveLethalScale: 100,
+  // Passive amounts are based on number of LB bars and comp.
+  passiveScales: [{
+    // One bar
+    scale: [75],
+  }, {
+    // Two bars
+    scale: [180],
+  }, {
+    // Three bars
+    scale: [220, 170, 160, 154, 144, 140],
+  }]
 };
 
 // Records limit break value history
@@ -91,8 +87,7 @@ class LimitBreakHistory {
       }
 
       // Source is unknown
-      if (this.hist[i] !== this.bars * lbAmounts.barSize)
-        console.log("Unknown Amount: " + generatedLB, this.hist, this.party);
+      // if (this.hist[i] !== this.bars * lbAmounts.barSize) console.log("Unknown Amount", generatedLB, lbAmounts);
       counters.unknownCnt = counters.unknownCnt + 1;
     }
 
@@ -149,18 +144,11 @@ class LimitBreakHistory {
   }
 
   getLBAmountsForParty() {
-    if (this.party.list.length < 8) {
-      return {
-        ...LBAmounts,
-        ...LBAmounts.lightPartyAmounts,
-        passive: LBAmounts.lightPartyAmounts.passiveScale[0]
-      };
-    }
-
-    let scale = LBAmounts.fullPartyAmounts.passiveScale;
+    const bars = Math.min(Math.max(this.bars, 1), LBAmounts.passiveScales.length);
+    const scale = LBAmounts.passiveScales[bars - 1].scale;
     return {
       ...LBAmounts,
-      ...LBAmounts.fullPartyAmounts,
+      surviveLethal: LBAmounts.surviveLethalScale * bars,
       passive: scale[Math.min(this.jobDuplicates, scale.length - 1)]
     };
   }
