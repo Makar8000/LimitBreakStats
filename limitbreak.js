@@ -393,7 +393,7 @@ class BarUI {
     });
 
     if (this.limitBreakHistory.bars === 3 && (roleMap['dps'] !== 4 || roleMap['tank'] !== 2 || roleMap['healer'] !== 2))
-      jobDuplicates++;
+      jobDuplicates = Math.max(jobDuplicates, 1);
 
     this.limitBreakHistory.party.list = partyList;
     this.limitBreakHistory.party.jobDuplicates = jobDuplicates;
