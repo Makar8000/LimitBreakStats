@@ -27,7 +27,7 @@ class LimitBreakHistory {
     // History
     this.hist = [0];
     // Max Number of LB Bars
-    this.bars = 3;
+    this.bars = 1;
     // Party info
     this.party = {
       jobDuplicates: 0,

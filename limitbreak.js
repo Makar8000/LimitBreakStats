@@ -2,7 +2,7 @@
 
 const overlaySettingsKey = 'limitbreak-tracker-settings';
 const lbLogCode = '36';
-const resetLine = { line: [lbLogCode, undefined, '0000', '3', '0000', '3'] };
+const resetLine = { line: [lbLogCode, undefined, '0000', '1', '0000', '1'] };
 
 // Setting keys
 const textOptions = {
@@ -392,7 +392,7 @@ class BarUI {
         roleMap[role] = 1;
     });
 
-    if (partyList.length === 8 && (roleMap['dps'] !== 4 || roleMap['tank'] !== 2 || roleMap['healer'] !== 2))
+    if (this.limitBreakHistory.bars === 3 && (roleMap['dps'] !== 4 || roleMap['tank'] !== 2 || roleMap['healer'] !== 2))
       jobDuplicates++;
 
     this.limitBreakHistory.party.list = partyList;
