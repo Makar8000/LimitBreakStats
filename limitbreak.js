@@ -641,7 +641,7 @@ window.addEventListener('DOMContentLoaded', async (e) => {
   let gSettingsUI = new SettingsUI(configStructure, options, settingsDiv, buildFunc);
 
   window.addOverlayListener('LogLine', (e) => barUI.update(e));
-  window.addOverlayListener('PartyChanged', (e) => barUI.limitBreakHistory.updateParty(e.party));
+  window.addOverlayListener('PartyChanged', (e) => barUI.updateParty(e.party));
   window.addOverlayListener('ChangeZone', (e) => barUI.updateZone(e.zoneID));
   document.addEventListener('onExampleShowcase', () => barUI.update(resetLine));
   window.startOverlayEvents();
