@@ -374,29 +374,14 @@ class BarUI {
     this.setValue('UnknownSource', this.limitBreakHistory.unknownCnt);
   }
 
-  updateParty(party) {
+  updateParty(alliance) {
     // Updates the job duplicate counter
-    let jobDuplicates = 0;
-    const jobMap = {};
-    const roleMap = {};
-    const partyList = party.filter(member => member.inParty);
-    partyList.forEach(member => {
-      if (jobMap[member.job])
-        jobDuplicates++;
-      jobMap[member.job] = true;
+    this.limitBreakHistory.updateParty(alliance)
+  }
 
-      let role = jobToRoleMap[kJobEnumToName[member.job]];
-      if (roleMap[role])
-        roleMap[role]++;
-      else
-        roleMap[role] = 1;
-    });
-
-    if (this.limitBreakHistory.bars === 3 && (roleMap['dps'] !== 4 || roleMap['tank'] !== 2 || roleMap['healer'] !== 2))
-      jobDuplicates = Math.max(jobDuplicates, 1);
-
-    this.limitBreakHistory.party.list = partyList;
-    this.limitBreakHistory.party.jobDuplicates = jobDuplicates;
+  updateZone(zoneID) {
+    // Updates the current zone
+    this.limitBreakHistory.updateZone(zoneID);
   }
 
   setValue(name, value) {
@@ -656,7 +641,8 @@ window.addEventListener('DOMContentLoaded', async (e) => {
   let gSettingsUI = new SettingsUI(configStructure, options, settingsDiv, buildFunc);
 
   window.addOverlayListener('LogLine', (e) => barUI.update(e));
-  window.addOverlayListener('PartyChanged', (e) => barUI.updateParty(e.party));
+  window.addOverlayListener('PartyChanged', (e) => barUI.limitBreakHistory.updateParty(e.party));
+  window.addOverlayListener('ChangeZone', (e) => barUI.updateZone(e.zoneID));
   document.addEventListener('onExampleShowcase', () => barUI.update(resetLine));
   window.startOverlayEvents();
 });

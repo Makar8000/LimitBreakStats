@@ -12,12 +12,17 @@ const LBAmounts = {
   passiveScales: [{
     // One bar
     scale: [75],
+    zones: [],
   }, {
     // Two bars
     scale: [180],
+    zones: [],
   }, {
     // Three bars
     scale: [220, 170, 160, 154, 144, 140],
+    // High-end duty Zone IDs
+    // TODO: Automate the update process for these
+    zones: [887, 906, 907, 908, 909, 930, 923],
   }]
 };
 
@@ -29,11 +34,9 @@ class LimitBreakHistory {
     // Max Number of LB Bars
     this.bars = 1;
     // Party info
-    this.party = {
-      jobDuplicates: 0,
-      // { id, name, worldId, job, inParty }
-      list: []
-    };
+    this.jobDuplicates = 0;
+    // Zone ID
+    this.zoneID = 0;
     // Surviving Lethal or Healing Critical
     // Increases by 2 if the source was a single-target heal
     this.surviveLethalCnt = 0;
@@ -58,6 +61,35 @@ class LimitBreakHistory {
     // Update Counters
     this.bars = Number.parseInt(bars, 10);
     this.updateCounters();
+  }
+
+  updateParty(alliance) {
+    // Updates the job duplicate counter
+    let jobDuplicates = 0;
+    const jobMap = {};
+    const roleMap = {};
+    // [{ id, name, worldId, job, inParty }]
+    alliance.filter(member => member.inParty).forEach(member => {
+      if (jobMap[member.job])
+        jobDuplicates++;
+      jobMap[member.job] = true;
+
+      let role = jobToRoleMap[kJobEnumToName[member.job]];
+      if (roleMap[role])
+        roleMap[role]++;
+      else
+        roleMap[role] = 1;
+    });
+
+    // TODO: More research on how scaling works for non-standard parties
+    if (this.bars === 3 && (roleMap['dps'] !== 4 || roleMap['tank'] !== 2 || roleMap['healer'] !== 2))
+      jobDuplicates = Math.max(jobDuplicates, 1);
+
+    this.jobDuplicates = jobDuplicates;
+  }
+
+  updateZone(zoneID) {
+    this.zoneID = zoneID;
   }
 
   updateCounters() {
@@ -140,18 +172,19 @@ class LimitBreakHistory {
     return str;
   }
 
-  getCurrentValue() {
-    return this.hist[this.hist.length - 1];
-  }
-
   getLBAmountsForParty() {
     const bars = Math.min(Math.max(this.bars, 1), LBAmounts.passiveScales.length);
     const scale = LBAmounts.passiveScales[bars - 1].scale;
+    const shouldDiminish = LBAmounts.passiveScales[bars - 1].zones.includes(this.zoneID);
     return {
       ...LBAmounts,
       surviveLethal: LBAmounts.surviveLethalScale * bars,
-      passive: scale[Math.min(this.jobDuplicates, scale.length - 1)]
+      passive: shouldDiminish ? scale[Math.min(this.jobDuplicates, scale.length - 1)] : scale[0]
     };
+  }
+
+  getCurrentValue() {
+    return this.hist[this.hist.length - 1];
   }
 }
 
