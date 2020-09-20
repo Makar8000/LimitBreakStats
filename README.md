@@ -40,7 +40,7 @@ You can find more information about the Limit Break logline in the [LogGuide](ht
 ### Caveats or bugs
 
 * The overlay is not able to reliably determine the source of generation for the last tick, since the excess amount is clipped.
-* For instances where the max number of LB bars can change, such as alliances or dungeons, the numbers will only be accurate per-encounter.
+* The counters will reset when the max number of LB bars changes, such as alliance raids or the last boss in dungeons.
 * Pre-shadowbringers content is not supported.
 
 ### Sources of LB Generation

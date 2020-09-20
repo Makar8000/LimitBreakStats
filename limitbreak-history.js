@@ -30,7 +30,7 @@ const LBAmounts = {
 class LimitBreakHistory {
   constructor() {
     // History
-    this.hist = [0];
+    this.hist = [];
     // Max Number of LB Bars
     this.bars = 1;
     // Party info
@@ -46,21 +46,28 @@ class LimitBreakHistory {
     this.unknownCnt = 0;
   }
 
-  updateHistory(hex, bars) {
+  updateHistory(hex, stringBars) {
+    // Get the max number of bars
+    const bars = Number.parseInt(stringBars, 10);
     // Get the current total amount of LB
     const currentLB = Number.parseInt(hex, 16);
-    if (!currentLB) {
-      // Reset history if current value is 0
+    let shouldUpdateCounters = true;
+
+    // Reset history if current value is 0 or max bars has changed.
+    if (!currentLB || (this.bars !== bars)) {
+      shouldUpdateCounters = false;
       this.reset();
-      return;
     }
+
+    // Update max number of bars
+    this.bars = bars;
 
     // Add new value to history
     this.hist.push(currentLB);
 
     // Update Counters
-    this.bars = Number.parseInt(bars, 10);
-    this.updateCounters();
+    if (shouldUpdateCounters)
+      this.updateCounters();
   }
 
   updateParty(alliance) {
@@ -131,7 +138,7 @@ class LimitBreakHistory {
 
   reset() {
     // Reset history and counts
-    this.hist = [0];
+    this.hist = [];
     this.surviveLethalCnt = 0;
     this.passiveCnt = 0;
     this.unknownCnt = 0;
@@ -176,8 +183,8 @@ class LimitBreakHistory {
     const bars = Math.min(Math.max(this.bars, 1), LBAmounts.passiveScales.length);
     const scale = LBAmounts.passiveScales[bars - 1].scale;
     const shouldDiminish = LBAmounts.passiveScales[bars - 1].zones.includes(this.zoneID);
+
     return {
-      ...LBAmounts,
       surviveLethal: LBAmounts.surviveLethalScale * bars,
       passive: shouldDiminish ? scale[Math.min(this.jobDuplicates, scale.length - 1)] : scale[0]
     };
