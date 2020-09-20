@@ -37,6 +37,12 @@ This method of determining the source has some problems. If the amount gained ex
 
 You can find more information about the Limit Break logline in the [LogGuide](https://github.com/quisquous/cactbot/blob/main/docs/LogGuide.md#24-limitbreak).
 
+### Caveats or bugs
+
+* The overlay is not able to reliably determine the source of generation for the last tick, since the excess amount is clipped.
+* For instances where the max number of LB bars can change, such as alliances or dungeons, the numbers will only be accurate per-encounter.
+* Pre-shadowbringers content is not supported.
+
 ### Sources of LB Generation
 
 These numbers are specific to Shadowbringers content. The amount you generate scales with the max number of Limit Break bars the party can have.
