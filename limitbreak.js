@@ -27,7 +27,7 @@ function getOptionsForKeys(validKeys) {
   return options;
 }
 
-const validSelectKeys = ['None', 'CurrentLB', 'TimeToBar', 'TimeToMax', 'LBCounts'];
+const validSelectKeys = ['None', 'CurrentLB', 'TimeToBar', 'TimeToMax', 'LBCounts', 'SurviveLethals', 'PassiveTicks', 'UnknownSource'];
 const selectOptions = getOptionsForKeys(validSelectKeys);
 const validDetailKeys = ['CurrentLB', 'TimeToBar', 'TimeToMax', 'SurviveLethals', 'PassiveTicks', 'UnknownSource'];
 const detailOptions = getOptionsForKeys(validDetailKeys);
