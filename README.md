@@ -50,3 +50,7 @@ These numbers are specific to Shadowbringers content. The amount you generate sc
 * **Healing Low HP:** `100` / `200` / `300` per player healed. Getting healed when you are below 10% HP. This amount is doubled for single-target heals. HoT ticks do not count. 
 * **Passive:** `75` / `180` / `220` every three seconds. Having duplicate jobs or a non-standard comp in a "High-end Duty" will decrease the amount per tick. The scaling for this is as follows: `220 > 170 > 160 > 154 > 144 > 140`.
 * **Mechanics:** Some mechanics, such as interrupting a boss, will generate LB. This amount varies depending on the mechanic and content.
+
+### More Information
+
+For more information about how Limit Break works in general, please see this [document](https://docs.google.com/document/d/1JK9BKbW49Kye5V60jD16rvzmliurLE1Ngq6Z7-WubKI/) created by [Allagan Studies](https://www.akhmorning.com/allagan-studies/).
