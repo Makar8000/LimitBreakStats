@@ -22,7 +22,15 @@ const LBAmounts = {
     scale: [220, 170, 160, 154, 144, 140],
     // High-end duty Zone IDs
     // TODO: Automate the update process for these
-    zones: [887, 906, 907, 908, 909, 930, 923],
+    zones: [
+      887, // TEA
+      946, // E9S
+      947, // E10S
+      948, // E11S
+      949, // E12S
+      951, // Diamond EX
+      972  // Levi Unreal
+    ],
   }]
 };
 
