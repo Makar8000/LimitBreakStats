@@ -21,15 +21,10 @@ const LBAmounts = {
     // Three bars
     scale: [220, 170, 160, 154, 144, 140],
     // High-end duty Zone IDs
-    // TODO: Automate the update process for these
+    // Obtained from TerritoryType / ContentFinderCondition
     zones: [
-      887, // TEA
-      946, // E9S
-      947, // E10S
-      948, // E11S
-      949, // E12S
-      951, // Diamond EX
-      972  // Levi Unreal
+      996, // Hydaelyn EX
+      993, // Zodiark EX
     ],
   }]
 };
@@ -223,8 +218,8 @@ const debugFromLog = log => {
 
 // Credit / Taken from: https://github.com/quisquous/cactbot/pull/1794
 const kTankJobs = ['GLA', 'PLD', 'MRD', 'WAR', 'DRK', 'GNB'];
-const kHealerJobs = ['CNJ', 'WHM', 'SCH', 'AST'];
-const kMeleeDpsJobs = ['PGL', 'MNK', 'LNC', 'DRG', 'ROG', 'NIN', 'SAM'];
+const kHealerJobs = ['CNJ', 'WHM', 'SCH', 'AST', 'SGE'];
+const kMeleeDpsJobs = ['PGL', 'MNK', 'LNC', 'DRG', 'ROG', 'NIN', 'SAM', 'RPR'];
 const kRangedDpsJobs = ['ARC', 'BRD', 'DNC', 'MCH'];
 const kCasterDpsJobs = ['BLU', 'RDM', 'BLM', 'SMN', 'ACN', 'THM'];
 const kDpsJobs = [...kMeleeDpsJobs, ...kRangedDpsJobs, ...kCasterDpsJobs];
@@ -272,6 +267,8 @@ const kJobEnumToName = {
   36: 'BLU',
   37: 'GNB',
   38: 'DNC',
+  39: 'RPR',
+  40: 'SGE',
 };
 
 const jobToRoleMap = (() => {
