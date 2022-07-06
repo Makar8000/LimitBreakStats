@@ -23,8 +23,9 @@ const LBAmounts = {
     // High-end duty Zone IDs
     // Obtained from TerritoryType / ContentFinderCondition
     zones: [
-      996, // Hydaelyn EX
-      993, // Zodiark EX
+      968,  // Dragonsong Ultimate
+      998,  // Endsinger EX
+      1035, // Ultima Unreal
       1003, // P1S
       1005, // P2S
       1007, // P3S
