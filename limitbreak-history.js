@@ -22,15 +22,7 @@ const LBAmounts = {
     scale: [220, 170, 160, 154, 144, 140],
     // High-end duty Zone IDs
     // Obtained from TerritoryType / ContentFinderCondition
-    zones: [
-      968,  // Dragonsong Ultimate
-      998,  // Endsinger EX
-      1035, // Ultima Unreal
-      1003, // P1S
-      1005, // P2S
-      1007, // P3S
-      1009, // P4S
-    ],
+    zones: [],
   }]
 };
 
@@ -52,6 +44,8 @@ class LimitBreakHistory {
     this.passiveCnt = 0;
     // Source of LB is unknown
     this.unknownCnt = 0;
+    // Grab HighEndDuty zones
+    setHighEndZones();
   }
 
   updateHistory(hex, stringBars) {
@@ -219,6 +213,25 @@ const debugFromLog = log => {
       results.events[gain] = [values[i].toString(16).toUpperCase()];
   }
   return results;
+}
+
+const setHighEndZones = async () => {
+  try {
+    const results = await contentFinderReq({}, 1);
+    if (!Array.isArray(results)) throw "invalid results";
+    LBAmounts.passiveScales[2].zones = results;
+  } catch {
+    console.warn("Unable to grab HighEndDuty list. LB calculation may be incorrect when using non-standard comps on these duties.");
+  }
+}
+
+const contentFinderReq = async (results, page) => {
+  const resp = await fetch(`https://xivapi.com/ContentFinderCondition?columns=HighEndDuty,TerritoryType.ID&page=${page}`);
+  const json = await resp.json();
+  json.Results.filter(r => r.HighEndDuty === 1).forEach(r => results[r.TerritoryType.ID] = true);
+  if (json.Pagination.PageNext)
+    return await contentFinderReq(results, json.Pagination.PageNext);
+  return Object.keys(results).map(r => parseInt(r));
 }
 
 // Credit / Taken from: https://github.com/quisquous/cactbot/pull/1794
