@@ -23,7 +23,9 @@ const LBAmounts = {
     // High-end duty Zone IDs
     // Obtained from TerritoryType / ContentFinderCondition
     zones: [],
-  }]
+  }],
+  // Limits dimishing to 5.x+ content
+  minLvl: 80,
 };
 
 // Records limit break value history
@@ -226,9 +228,9 @@ const setHighEndZones = async () => {
 }
 
 const contentFinderReq = async (results, page) => {
-  const resp = await fetch(`https://xivapi.com/ContentFinderCondition?columns=HighEndDuty,TerritoryType.ID&page=${page}`);
+  const resp = await fetch(`https://xivapi.com/ContentFinderCondition?columns=HighEndDuty,TerritoryType.ID,ClassJobLevelSync&page=${page}`);
   const json = await resp.json();
-  json.Results.filter(r => r.HighEndDuty === 1).forEach(r => results[r.TerritoryType.ID] = true);
+  json.Results.filter(r => r.HighEndDuty === 1 && r.ClassJobLevelSync >= LBAmounts.minLvl).forEach(r => results[r.TerritoryType.ID] = true);
   if (json.Pagination.PageNext)
     return await contentFinderReq(results, json.Pagination.PageNext);
   return Object.keys(results).map(r => parseInt(r));
