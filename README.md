@@ -4,13 +4,13 @@
 
 An ACT overlay for displaying limit break statistics such as exact amount, source counts, and time estimates.
 
-This code is a modified version of the targetbars overlays written by [quisquous](https://github.com/quisquous). You can find the original code on the official [OverlayPlugin](https://github.com/ngld/OverlayPlugin) repo. 
+This code is a modified version of the targetbars overlays written by [quisquous](https://github.com/quisquous). You can find the original code on the official [OverlayPlugin](https://github.com/OverlayPlugin/OverlayPlugin/) repo. 
 
 English is the only language option available as I do not have the will to maintain multi-language support - sorry!
 
 ### Installation
 
-1. Make sure you have [ngld's OverlayPlugin](https://gist.github.com/ngld/e2217563bbbe1750c0917217f136687d#how-do-i-install-overlayplugin-or-cactbot) installed.
+1. Make sure you have the latest [OverlayPlugin](https://overlayplugin.github.io/docs/setup/#overlayplugin) installed.
 2. Go to `Plugins` tab -> `OverlayPlugin.dll` tab -> Click on `New`.
 3. Enter anything for the name (ex. LBStats) and in the Preset dropdown select `Custom` -> `MiniParse`.
 4. Click on the Overlay you just created on the left panel, and scroll down to the URL field.
