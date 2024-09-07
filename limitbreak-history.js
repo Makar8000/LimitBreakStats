@@ -219,29 +219,37 @@ const debugFromLog = log => {
 
 const setHighEndZones = async () => {
   try {
-    const results = await contentFinderReq({}, 1);
-    if (!Array.isArray(results)) throw "invalid results";
+    const results = await contentFinderReq(new Set());
+    if (!Array.isArray(results))
+      throw "invalid results";
     LBAmounts.passiveScales[2].zones = results;
   } catch {
     console.warn("Unable to grab HighEndDuty list. LB calculation may be incorrect when using non-standard comps on these duties.");
   }
 }
 
-const contentFinderReq = async (results, page) => {
-  const resp = await fetch(`https://xivapi.com/ContentFinderCondition?columns=HighEndDuty,TerritoryType.ID,ClassJobLevelSync&page=${page}`);
+const contentFinderReq = async (results, cursor) => {
+  let url = `https://beta.xivapi.com/api/1/search?sheets=ContentFinderCondition&fields=TerritoryType@as(raw)`;
+  if (typeof cursor === 'string') {
+    url = `${url}&cursor=${cursor}`;
+  } else {
+    url = `${url}&query=+HighEndDuty=true +ClassJobLevelSync>=${LBAmounts.minLvl}`;
+  }
+  const resp = await fetch(url);
   const json = await resp.json();
-  json.Results.filter(r => r.HighEndDuty === 1 && r.ClassJobLevelSync >= LBAmounts.minLvl).forEach(r => results[r.TerritoryType.ID] = true);
-  if (json.Pagination.PageNext)
-    return await contentFinderReq(results, json.Pagination.PageNext);
-  return Object.keys(results).map(r => parseInt(r));
+  json.results.forEach(r => results.add(r.fields["TerritoryType@as(raw)"]));
+  if (json.next)
+    return await contentFinderReq(results, json.next);
+  return Array.from(results);
 }
 
+// TODO: use Role field in ClassJob
 // Credit / Taken from: https://github.com/quisquous/cactbot/pull/1794
 const kTankJobs = ['GLA', 'PLD', 'MRD', 'WAR', 'DRK', 'GNB'];
 const kHealerJobs = ['CNJ', 'WHM', 'SCH', 'AST', 'SGE'];
-const kMeleeDpsJobs = ['PGL', 'MNK', 'LNC', 'DRG', 'ROG', 'NIN', 'SAM', 'RPR'];
+const kMeleeDpsJobs = ['PGL', 'MNK', 'LNC', 'DRG', 'ROG', 'NIN', 'SAM', 'RPR', 'VPR'];
 const kRangedDpsJobs = ['ARC', 'BRD', 'DNC', 'MCH'];
-const kCasterDpsJobs = ['BLU', 'RDM', 'BLM', 'SMN', 'ACN', 'THM'];
+const kCasterDpsJobs = ['BLM', 'SMN', 'RDM', 'PCT', 'BLU', 'ACN', 'THM'];
 const kDpsJobs = [...kMeleeDpsJobs, ...kRangedDpsJobs, ...kCasterDpsJobs];
 const kCraftingJobs = ['CRP', 'BSM', 'ARM', 'GSM', 'LTW', 'WVR', 'ALC', 'CUL'];
 const kGatheringJobs = ['MIN', 'BTN', 'FSH'];
@@ -289,6 +297,8 @@ const kJobEnumToName = {
   38: 'DNC',
   39: 'RPR',
   40: 'SGE',
+  41: 'VPR',
+  42: 'PCT',
 };
 
 const jobToRoleMap = (() => {
