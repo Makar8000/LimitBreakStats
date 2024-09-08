@@ -89,14 +89,16 @@ class LimitBreakHistory {
         jobDuplicates++;
       jobMap[member.job] = true;
 
-      let role = LBAmounts.roleMap[member.job];
-      if (roleMap[role])
-        roleMap[role]++;
-      else
-        roleMap[role] = 1;
+      if (LBAmounts.roleMap) {
+        let role = LBAmounts.roleMap[member.job];
+        if (roleMap[role])
+          roleMap[role]++;
+        else
+          roleMap[role] = 1;
+      }
     });
 
-    if (Object.keys(LBAmounts.roleMap).length !== 0 && this.bars === 3) {
+    if (this.bars === 3 && LBAmounts.roleMap) {
       // TODO: More research on how scaling works for non-standard parties
       if (roleMap['dps'] !== 4 || roleMap['tank'] !== 2 || roleMap['healer'] !== 2)
         jobDuplicates = Math.max(jobDuplicates, 1);
@@ -253,6 +255,7 @@ const setRoleMap = async () => {
   try {
     await classJobReq();
   } catch {
+    LBAmounts.roleMap = null;
     console.warn("Unable to grab role map. LB calculation may be incorrect when using non-standard comps in high-end duties.");
   }
 }
@@ -266,6 +269,7 @@ const classJobReq = async (cursor) => {
   }
   const resp = await fetch(url);
   const json = await resp.json();
+  LBAmounts.roleMap = {};
   json.results.forEach(r => LBAmounts.roleMap[r.row_id] = roleToNameMap[r.fields.Role]);
   if (json.next)
     await classJobReq(json.next);
