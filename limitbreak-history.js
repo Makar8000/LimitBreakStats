@@ -96,9 +96,11 @@ class LimitBreakHistory {
         roleMap[role] = 1;
     });
 
-    // TODO: More research on how scaling works for non-standard parties
-    if (this.bars === 3 && (roleMap['dps'] !== 4 || roleMap['tank'] !== 2 || roleMap['healer'] !== 2))
-      jobDuplicates = Math.max(jobDuplicates, 1);
+    if (Object.keys(LBAmounts.roleMap).length !== 0 && this.bars === 3) {
+      // TODO: More research on how scaling works for non-standard parties
+      if (roleMap['dps'] !== 4 || roleMap['tank'] !== 2 || roleMap['healer'] !== 2)
+        jobDuplicates = Math.max(jobDuplicates, 1);
+    }
 
     this.jobDuplicates = jobDuplicates;
   }
@@ -252,8 +254,6 @@ const setRoleMap = async () => {
     await classJobReq();
   } catch {
     console.warn("Unable to grab role map. LB calculation may be incorrect when using non-standard comps in high-end duties.");
-    for (let i = 0; i < 100; i++)
-      LBAmounts.roleMap[i] = i;
   }
 }
 
