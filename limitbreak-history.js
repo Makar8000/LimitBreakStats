@@ -26,6 +26,8 @@ const LBAmounts = {
   }],
   // Limits dimishing to 5.x+ content
   minLvl: 80,
+  // Map job id to role
+  roleMap: {},
 };
 
 // Records limit break value history
@@ -48,6 +50,8 @@ class LimitBreakHistory {
     this.unknownCnt = 0;
     // Grab HighEndDuty zones
     setHighEndZones();
+    // Grabs job enum -> role map
+    setRoleMap();
   }
 
   updateHistory(hex, stringBars) {
@@ -85,8 +89,7 @@ class LimitBreakHistory {
         jobDuplicates++;
       jobMap[member.job] = true;
 
-      // TODO: let role = newJobMap[member.job];
-      let role = jobToRoleMap[kJobEnumToName[member.job]];
+      let role = LBAmounts.roleMap[member.job];
       if (roleMap[role])
         roleMap[role]++;
       else
@@ -234,7 +237,7 @@ const contentFinderReq = async (results, cursor) => {
   if (typeof cursor === 'string') {
     url = `${url}&cursor=${cursor}`;
   } else {
-    url = `${url}&query=+HighEndDuty=true +ClassJobLevelSync>=${LBAmounts.minLvl}`;
+    url = `${url}&query=%2BHighEndDuty=true%20%2BClassJobLevelSync%3E=${LBAmounts.minLvl}`;
   }
   const resp = await fetch(url);
   const json = await resp.json();
@@ -244,94 +247,20 @@ const contentFinderReq = async (results, cursor) => {
   return Array.from(results);
 }
 
-const getRoleMap = async () => {
-  const roleToNameMap = {
-    1: 'tank',
-    2: 'dps', // melee
-    3: 'dps', // ranged
-    4: 'healer',
-  };
-  const map = {};
-  const resp = await fetch("https://beta.xivapi.com/api/1/search?sheets=ClassJob&fields=Role&query=Role>=1");
-  const json = await resp.json();
-  json.results.forEach(r => map[r.row_id] = roleToNameMap[r.fields.Role]);
-  return map;
+const setRoleMap = async () => {
+  try {
+    const roleToNameMap = {
+      1: 'tank',
+      2: 'dps', // melee
+      3: 'dps', // ranged
+      4: 'healer',
+    };
+    const resp = await fetch("https://beta.xivapi.com/api/1/search?sheets=ClassJob&fields=Role&query=Role%3E=1");
+    const json = await resp.json();
+    json.results.forEach(r => LBAmounts.roleMap[r.row_id] = roleToNameMap[r.fields.Role]);
+  } catch {
+    console.warn("Unable to grab role map. LB calculation may be incorrect when using non-standard comps in high-end duties.");
+    for (let i = 0; i < 100; i++)
+      LBAmounts.roleMap[i] = i;
+  }
 }
-
-// TODO: Replace this with the above stuff
-// Credit / Taken from: https://github.com/quisquous/cactbot/pull/1794
-const kTankJobs = ['GLA', 'PLD', 'MRD', 'WAR', 'DRK', 'GNB'];
-const kHealerJobs = ['CNJ', 'WHM', 'SCH', 'AST', 'SGE'];
-const kMeleeDpsJobs = ['PGL', 'MNK', 'LNC', 'DRG', 'ROG', 'NIN', 'SAM', 'RPR', 'VPR'];
-const kRangedDpsJobs = ['ARC', 'BRD', 'DNC', 'MCH'];
-const kCasterDpsJobs = ['BLM', 'SMN', 'RDM', 'PCT', 'BLU', 'ACN', 'THM'];
-const kDpsJobs = [...kMeleeDpsJobs, ...kRangedDpsJobs, ...kCasterDpsJobs];
-const kCraftingJobs = ['CRP', 'BSM', 'ARM', 'GSM', 'LTW', 'WVR', 'ALC', 'CUL'];
-const kGatheringJobs = ['MIN', 'BTN', 'FSH'];
-const kAllRoles = ['tank', 'healer', 'dps', 'crafter', 'gatherer', 'none'];
-
-const kJobEnumToName = {
-  0: 'NONE',
-  1: 'GLA',
-  2: 'PGL',
-  3: 'MRD',
-  4: 'LNC',
-  5: 'ARC',
-  6: 'CNJ',
-  7: 'THM',
-  8: 'CRP',
-  9: 'BSM',
-  10: 'ARM',
-  11: 'GSM',
-  12: 'LTW',
-  13: 'WVR',
-  14: 'ALC',
-  15: 'CUL',
-  16: 'MIN',
-  17: 'BTN',
-  18: 'FSH',
-  19: 'PLD',
-  20: 'MNK',
-  21: 'WAR',
-  22: 'DRG',
-  23: 'BRD',
-  24: 'WHM',
-  25: 'BLM',
-  26: 'ACN',
-  27: 'SMN',
-  28: 'SCH',
-  29: 'ROG',
-  30: 'NIN',
-  31: 'MCH',
-  32: 'DRK',
-  33: 'AST',
-  34: 'SAM',
-  35: 'RDM',
-  36: 'BLU',
-  37: 'GNB',
-  38: 'DNC',
-  39: 'RPR',
-  40: 'SGE',
-  41: 'VPR',
-  42: 'PCT',
-};
-
-const jobToRoleMap = (() => {
-  const addToMap = (map, keys, value) => keys.forEach((key) => map.set(key, value));
-
-  const map = new Map([['NONE', 'none']]);
-  addToMap(map, kTankJobs, 'tank');
-  addToMap(map, kHealerJobs, 'healer');
-  addToMap(map, kDpsJobs, 'dps');
-  addToMap(map, kCraftingJobs, 'crafter');
-  addToMap(map, kGatheringJobs, 'gatherer');
-
-  return new Proxy(map, {
-    get: function (target, element) {
-      if (target.has(element))
-        return target.get(element);
-      console.log(`Unknown job role ${element}`);
-      return '';
-    },
-  });
-})();
