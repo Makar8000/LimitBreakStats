@@ -249,18 +249,31 @@ const contentFinderReq = async (results, cursor) => {
 
 const setRoleMap = async () => {
   try {
-    const roleToNameMap = {
-      1: 'tank',
-      2: 'dps', // melee
-      3: 'dps', // ranged
-      4: 'healer',
-    };
-    const resp = await fetch("https://beta.xivapi.com/api/1/search?sheets=ClassJob&fields=Role&query=Role%3E=1");
-    const json = await resp.json();
-    json.results.forEach(r => LBAmounts.roleMap[r.row_id] = roleToNameMap[r.fields.Role]);
+    await classJobReq();
   } catch {
     console.warn("Unable to grab role map. LB calculation may be incorrect when using non-standard comps in high-end duties.");
     for (let i = 0; i < 100; i++)
       LBAmounts.roleMap[i] = i;
   }
 }
+
+const classJobReq = async (cursor) => {
+  let url = `https://beta.xivapi.com/api/1/search?sheets=ClassJob&fields=Role`;
+  if (typeof cursor === 'string') {
+    url = `${url}&cursor=${cursor}`;
+  } else {
+    url = `${url}&query=Role%3E=1`;
+  }
+  const resp = await fetch(url);
+  const json = await resp.json();
+  json.results.forEach(r => LBAmounts.roleMap[r.row_id] = roleToNameMap[r.fields.Role]);
+  if (json.next)
+    await classJobReq(json.next);
+}
+
+const roleToNameMap = {
+  1: 'tank',
+  2: 'dps', // melee
+  3: 'dps', // ranged
+  4: 'healer',
+};
