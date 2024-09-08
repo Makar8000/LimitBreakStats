@@ -85,6 +85,7 @@ class LimitBreakHistory {
         jobDuplicates++;
       jobMap[member.job] = true;
 
+      // TODO: let role = newJobMap[member.job];
       let role = jobToRoleMap[kJobEnumToName[member.job]];
       if (roleMap[role])
         roleMap[role]++;
@@ -243,7 +244,21 @@ const contentFinderReq = async (results, cursor) => {
   return Array.from(results);
 }
 
-// TODO: use Role field in ClassJob
+const getRoleMap = async () => {
+  const roleToNameMap = {
+    1: 'tank',
+    2: 'dps', // melee
+    3: 'dps', // ranged
+    4: 'healer',
+  };
+  const map = {};
+  const resp = await fetch("https://beta.xivapi.com/api/1/search?sheets=ClassJob&fields=Role&query=Role>=1");
+  const json = await resp.json();
+  json.results.forEach(r => map[r.row_id] = roleToNameMap[r.fields.Role]);
+  return map;
+}
+
+// TODO: Replace this with the above stuff
 // Credit / Taken from: https://github.com/quisquous/cactbot/pull/1794
 const kTankJobs = ['GLA', 'PLD', 'MRD', 'WAR', 'DRK', 'GNB'];
 const kHealerJobs = ['CNJ', 'WHM', 'SCH', 'AST', 'SGE'];
